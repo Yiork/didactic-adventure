@@ -1,4 +1,5 @@
 import { procedure, router } from "../trpc";
+import { NextApiRequest } from "next";
 import Stripe from "stripe";
 import { stripeCheckoutSessionSchema } from "../../schemas/stripe.schema";
 
@@ -26,8 +27,25 @@ export const stripeRouter = router({
             },
           },
         ],
-        success_url: `http://localhost:3000/result?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `http://localhost:3000/result?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${ctx.req.headers.origin}/result?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${ctx.req.headers.origin}/result?session_id={CHECKOUT_SESSION_ID}`,
       });
     }),
+  webhook_handler: procedure.mutation(async ({ ctx }) => {
+    const event: Stripe.Event = ctx.req;
+
+    switch (event.type) {
+      case "payment_intent.succeeded":
+        const paymentIntent = event.data.object;
+        console.log("PaymentIntent was successful!");
+        break;
+      case "payment_method.attached":
+        const paymentMethod = event.data.object;
+        console.log("PaymentMethod was attached to a Customer!");
+        break;
+      // ... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+  }),
 });
