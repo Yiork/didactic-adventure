@@ -6,6 +6,10 @@ module.exports = {
     appDir: true,
   },
   images: {
-    domains: ["res.cloudinary.com", "lh3.googleusercontent.com"],
+    domains: [
+      "res.cloudinary.com",
+      "lh3.googleusercontent.com",
+      "replicate.delivery",
+    ],
   },
 };

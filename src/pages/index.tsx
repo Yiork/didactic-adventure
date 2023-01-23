@@ -1,67 +1,33 @@
-import React, { useState } from "react";
+import React from "react";
 import { trpc } from "../utils/trpcNext";
-import Link from "next/link";
+import useUpload from "../hooks/useUpload";
+import { DeoldifyModel } from "../schemas/replicate.schema";
 import Image from "next/image";
 
 const Index = () => {
-  const [page, setPage] = useState(0);
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isInitialLoading,
-    isFetchingNextPage,
-  } = trpc.infinitePosts.useInfiniteQuery(
-    {
-      limit: 5,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-    }
-  );
+  const { mutate, data, isLoading } = trpc.deoldify.useMutation();
+  const { uploadBox, preview } = useUpload();
 
-  const onFetchNextPage = () => {
-    fetchNextPage().catch((err) => console.error(err));
-    setPage((prev) => prev + 1);
+  const compute = async () => {
+    await mutate({ base64Image: preview, model_name: DeoldifyModel.Stable });
   };
 
-  const post = data?.pages[page]?.items;
-
-  const postList = isInitialLoading ? (
-    <div>..loading</div>
-  ) : (
-    post?.map((post) => (
-      <div key={post.id} className="border rounded">
-        {post.thumbnail && (
-          <Image
-            alt="post-thumbnail"
-            src={post.thumbnail}
-            width={400}
-            height={300}
-            blurDataURL={post.thumbnail}
-            priority
-            style={{ width: "auto" }}
-          />
-        )}
-        <div>{post.title}</div>
-        <Link href={`/post/${post.slug}`}>Go to post</Link>
-      </div>
-    ))
-  );
-
   return (
-    <div>
-      <div className="mb-5">
-        <Link href={`/post/new`}>Create post</Link>
-      </div>
-      {postList}
-      {hasNextPage && (
-        <button
-          disabled={isInitialLoading || isFetchingNextPage}
-          onClick={onFetchNextPage}
-        >
-          {isFetchingNextPage ? "...loading" : "Fetch more page"}
-        </button>
+    <div className="h-screen">
+      {uploadBox()}
+      <button onClick={compute}>Submit</button>
+
+      {isLoading && <div>...loading</div>}
+
+      {data && (
+        <div>
+          {data?.output && (
+            <div className="w-full relative aspect-video">
+              <Image fill src={data.output} alt="output" sizes="100vw" />
+            </div>
+          )}
+          <p>status: {data.status}</p>
+        </div>
       )}
     </div>
   );

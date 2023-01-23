@@ -14,7 +14,7 @@ export const getFileUrl = async (file: string, name: string) => {
     const uniqId = randomUUID();
 
     const uploaded = await cloudinary.v2.uploader.upload(file, {
-      folder: "trapp-assets",
+      folder: "ai-assets",
       allowed_formats,
       public_id: `${name}-${uniqId}`,
     });

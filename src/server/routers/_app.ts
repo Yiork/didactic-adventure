@@ -1,6 +1,7 @@
 import { mergeRouters } from "../trpc";
-import { postRouter } from "./post";
+import { replicateRouter } from "./replicate";
+import { stripeRouter } from "./stripe";
 
-export const appRouter = mergeRouters(postRouter);
+export const appRouter = mergeRouters(replicateRouter, stripeRouter);
 
 export type AppRouter = typeof appRouter;
